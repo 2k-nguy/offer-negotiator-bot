@@ -37,8 +37,12 @@ function populateStrategySelect() {
 }
 
 function setupEventListeners() {
-    // Setup form submission
-    document.getElementById('setupForm').addEventListener('submit', handleSetup);
+    // Setup resume upload form submission
+    document.getElementById('resumeUploadForm').addEventListener('submit', handleResumeUpload);
+    
+    // Profile confirmation
+    document.getElementById('confirmProfile').addEventListener('click', confirmProfile);
+    document.getElementById('editProfile').addEventListener('click', editProfile);
     
     // Message sending
     document.getElementById('sendMessage').addEventListener('click', sendMessage);
@@ -52,22 +56,106 @@ function setupEventListeners() {
     document.getElementById('updateStrategy').addEventListener('click', updateStrategy);
 }
 
-function handleSetup(e) {
+let parsedUserProfile = null;
+
+function handleResumeUpload(e) {
     e.preventDefault();
+    
+    const formData = new FormData();
+    const resumeFile = document.getElementById('resumeFile').files[0];
+    
+    if (!resumeFile) {
+        showAlert('Please select a resume file', 'warning');
+        return;
+    }
+    
+    formData.append('resume', resumeFile);
+    
+    showLoading();
+    
+    fetch('/api/upload_resume', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            parsedUserProfile = data.user_profile;
+            displayParsedProfile(data.parsed_data);
+            showAlert('Resume parsed successfully!', 'success');
+        } else {
+            showAlert(data.error || 'Failed to parse resume', 'danger');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Error:', error);
+        showAlert('Error parsing resume', 'danger');
+    });
+}
+
+function displayParsedProfile(parsedData) {
+    // Show profile review section
+    document.getElementById('resumeUploadSection').style.display = 'none';
+    document.getElementById('profileReviewSection').style.display = 'block';
+    
+    // Display personal information
+    document.getElementById('personalInfo').innerHTML = `
+        <p><strong>Name:</strong> ${parsedData.name || 'Not found'}</p>
+        <p><strong>Email:</strong> ${parsedData.email || 'Not found'}</p>
+        <p><strong>Phone:</strong> ${parsedData.phone || 'Not found'}</p>
+    `;
+    
+    // Display professional information
+    document.getElementById('professionalInfo').innerHTML = `
+        <p><strong>Years Experience:</strong> ${parsedData.years_experience || 'Not found'}</p>
+        <p><strong>Education:</strong> ${parsedData.education_level || 'Not found'}</p>
+        <p><strong>Industry:</strong> ${parsedData.industry || 'Not found'}</p>
+    `;
+    
+    // Display skills and certifications
+    const skillsHtml = parsedData.skills && parsedData.skills.length > 0 
+        ? parsedData.skills.map(skill => `<span class="badge bg-primary me-1">${skill}</span>`).join('')
+        : '<p class="text-muted">No skills detected</p>';
+    
+    const certsHtml = parsedData.certifications && parsedData.certifications.length > 0
+        ? parsedData.certifications.map(cert => `<span class="badge bg-success me-1">${cert}</span>`).join('')
+        : '<p class="text-muted">No certifications detected</p>';
+    
+    document.getElementById('skillsInfo').innerHTML = `
+        <div class="mb-2">
+            <strong>Skills:</strong><br>
+            ${skillsHtml}
+        </div>
+        <div>
+            <strong>Certifications:</strong><br>
+            ${certsHtml}
+        </div>
+    `;
+    
+    // Display achievements
+    const achievementsHtml = parsedData.achievements && parsedData.achievements.length > 0
+        ? parsedData.achievements.map(achievement => `<li>${achievement}</li>`).join('')
+        : '<li class="text-muted">No achievements detected</li>';
+    
+    document.getElementById('achievementsInfo').innerHTML = `
+        <ul class="list-unstyled">
+            ${achievementsHtml}
+        </ul>
+    `;
+}
+
+function confirmProfile() {
+    if (!parsedUserProfile) {
+        showAlert('No profile data available', 'danger');
+        return;
+    }
     
     const formData = {
         company_name: document.getElementById('companyName').value,
         position: document.getElementById('position').value,
-        user_profile: {
-            years_experience: parseInt(document.getElementById('yearsExperience').value),
-            industry: document.getElementById('industry').value,
-            education_level: document.getElementById('educationLevel').value,
-            key_achievement: document.getElementById('keyAchievement').value,
-            primary_skill: document.getElementById('primarySkill').value,
-            certifications: [],
-            leadership_experience: true,
-            industry_awards: []
-        },
+        user_profile: parsedUserProfile,
         target_salary: parseInt(document.getElementById('targetSalary').value) || null,
         target_benefits: document.getElementById('targetBenefits').value.split(',').map(s => s.trim()).filter(s => s),
         deal_breakers: document.getElementById('dealBreakers').value.split(',').map(s => s.trim()).filter(s => s)
@@ -99,6 +187,12 @@ function handleSetup(e) {
         console.error('Error:', error);
         showAlert('Error creating negotiation context', 'danger');
     });
+}
+
+function editProfile() {
+    // Show upload section again
+    document.getElementById('resumeUploadSection').style.display = 'block';
+    document.getElementById('profileReviewSection').style.display = 'none';
 }
 
 function sendMessage() {
@@ -307,11 +401,6 @@ function showAlert(message, type) {
 function loadExampleScenario() {
     document.getElementById('companyName').value = 'TechCorp Inc';
     document.getElementById('position').value = 'Senior Product Manager';
-    document.getElementById('yearsExperience').value = '7';
-    document.getElementById('industry').value = 'technology';
-    document.getElementById('educationLevel').value = 'Masters';
-    document.getElementById('keyAchievement').value = 'Led team that increased revenue by 150%';
-    document.getElementById('primarySkill').value = 'Product Management';
     document.getElementById('targetSalary').value = '120000';
     document.getElementById('targetBenefits').value = 'health insurance, 401k, stock options';
     document.getElementById('dealBreakers').value = 'no remote work, salary below 100k';

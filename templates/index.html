@@ -26,84 +26,103 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Negotiation Setup</h5>
+                        <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Resume Upload & Setup</h5>
                     </div>
                     <div class="card-body">
-                        <form id="setupForm">
+                        <!-- Resume Upload Section -->
+                        <div id="resumeUploadSection">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-file-upload fa-3x text-primary mb-3"></i>
+                                <h5>Upload Your Resume</h5>
+                                <p class="text-muted">We'll automatically extract your information to create your negotiation profile</p>
+                            </div>
+                            
+                            <form id="resumeUploadForm" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="resumeFile" class="form-label">Resume File</label>
+                                    <input type="file" class="form-control" id="resumeFile" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" required>
+                                    <div class="form-text">Supported formats: PDF, DOC, DOCX, TXT, PNG, JPG, JPEG (Max 16MB)</div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="companyName" class="form-label">Company Name</label>
+                                            <input type="text" class="form-control" id="companyName" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="position" class="form-label">Position</label>
+                                            <input type="text" class="form-control" id="position" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="targetSalary" class="form-label">Target Salary ($)</label>
+                                            <input type="number" class="form-control" id="targetSalary" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="targetBenefits" class="form-label">Target Benefits (comma-separated)</label>
+                                            <input type="text" class="form-control" id="targetBenefits" placeholder="health insurance, 401k, stock options">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="dealBreakers" class="form-label">Deal Breakers (comma-separated)</label>
+                                    <input type="text" class="form-control" id="dealBreakers" placeholder="no remote work, salary below 100k">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Resume & Start Negotiation
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Profile Review Section (hidden initially) -->
+                        <div id="profileReviewSection" style="display: none;">
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Resume parsed successfully! Review your profile below:
+                            </div>
+                            
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="companyName" class="form-label">Company Name</label>
-                                        <input type="text" class="form-control" id="companyName" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="position" class="form-label">Position</label>
-                                        <input type="text" class="form-control" id="position" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="targetSalary" class="form-label">Target Salary ($)</label>
-                                        <input type="number" class="form-control" id="targetSalary" min="0">
-                                    </div>
+                                    <h6>Personal Information</h6>
+                                    <div id="personalInfo"></div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="yearsExperience" class="form-label">Years of Experience</label>
-                                        <input type="number" class="form-control" id="yearsExperience" min="0" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="industry" class="form-label">Industry</label>
-                                        <select class="form-select" id="industry" required>
-                                            <option value="technology">Technology</option>
-                                            <option value="finance">Finance</option>
-                                            <option value="healthcare">Healthcare</option>
-                                            <option value="consulting">Consulting</option>
-                                            <option value="marketing">Marketing</option>
-                                            <option value="other">Other</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="educationLevel" class="form-label">Education Level</label>
-                                        <select class="form-select" id="educationLevel">
-                                            <option value="High School">High School</option>
-                                            <option value="Bachelor's">Bachelor's</option>
-                                            <option value="Masters">Masters</option>
-                                            <option value="PhD">PhD</option>
-                                        </select>
-                                    </div>
+                                    <h6>Professional Information</h6>
+                                    <div id="professionalInfo"></div>
                                 </div>
                             </div>
-                            <div class="row">
+                            
+                            <div class="row mt-3">
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="keyAchievement" class="form-label">Key Achievement</label>
-                                        <textarea class="form-control" id="keyAchievement" rows="2" placeholder="e.g., Led team that increased revenue by 150%"></textarea>
-                                    </div>
+                                    <h6>Skills & Certifications</h6>
+                                    <div id="skillsInfo"></div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="primarySkill" class="form-label">Primary Skill</label>
-                                        <input type="text" class="form-control" id="primarySkill" placeholder="e.g., Product Management">
-                                    </div>
+                                    <h6>Achievements</h6>
+                                    <div id="achievementsInfo"></div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="targetBenefits" class="form-label">Target Benefits (comma-separated)</label>
-                                        <input type="text" class="form-control" id="targetBenefits" placeholder="health insurance, 401k, stock options">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="dealBreakers" class="form-label">Deal Breakers (comma-separated)</label>
-                                        <input type="text" class="form-control" id="dealBreakers" placeholder="no remote work, salary below 100k">
-                                    </div>
-                                </div>
+                            
+                            <div class="text-center mt-4">
+                                <button class="btn btn-success" id="confirmProfile">
+                                    <i class="fas fa-check me-2"></i>Confirm Profile & Start Negotiation
+                                </button>
+                                <button class="btn btn-secondary ms-2" id="editProfile">
+                                    <i class="fas fa-edit me-2"></i>Edit Profile
+                                </button>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-play me-2"></i>Start Negotiation
-                            </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -18,6 +18,8 @@ A sophisticated AI-powered bot that uses professional passive-aggressive tactics
 - **Leverage Point Identification**: Automatically identifies your strengths and market advantages
 
 ### 🛠️ Technical Features
+- **Resume Upload & Parsing**: Automatically extract information from PDF, DOC, DOCX, TXT, and image files
+- **AI-Powered Resume Analysis**: Uses GPT-4 to intelligently parse and structure resume data
 - **Web Interface**: Clean, intuitive dashboard for managing negotiations
 - **Context Management**: Track multiple negotiations simultaneously
 - **Response Templates**: Pre-built templates for common negotiation scenarios
@@ -55,19 +57,21 @@ A sophisticated AI-powered bot that uses professional passive-aggressive tactics
 
 ## 📖 Usage Guide
 
-### 1. Setting Up Your Profile
+### 1. Upload Your Resume
 
-Fill out the negotiation setup form with:
-- **Company Information**: Company name and position
-- **Your Profile**: Experience, education, achievements, skills
-- **Targets**: Desired salary, benefits, deal breakers
-- **Leverage Points**: Certifications, awards, competing offers
+Simply upload your resume file:
+- **Supported Formats**: PDF, DOC, DOCX, TXT, PNG, JPG, JPEG
+- **Automatic Parsing**: AI extracts your experience, skills, education, and achievements
+- **Profile Review**: Review and confirm the extracted information
+- **Minimal Input**: Only need to specify company name, position, and negotiation targets
 
 ### 2. Starting a Negotiation
 
-1. Click "Start Negotiation" to create a context
-2. The bot will analyze your profile and identify leverage points
-3. Choose your initial negotiation strategy
+1. Upload your resume and review the extracted profile
+2. Enter company name, position, and negotiation targets
+3. Click "Confirm Profile & Start Negotiation"
+4. The bot will analyze your profile and identify leverage points
+5. Choose your initial negotiation strategy
 
 ### 3. Managing Conversations
 
@@ -111,6 +115,29 @@ Switch between strategies based on company responses:
 - Positions you as thoughtful and strategic
 
 ## 🔧 Advanced Configuration
+
+### Resume Parsing
+
+The bot uses advanced AI to parse resumes and extract:
+
+**Personal Information:**
+- Name, email, phone number
+- Contact information
+
+**Professional Details:**
+- Years of experience
+- Education level
+- Industry classification
+- Work experience history
+
+**Skills & Achievements:**
+- Technical skills
+- Certifications
+- Key achievements
+- Project experience
+
+**Fallback Parsing:**
+If AI parsing fails, the bot uses regex patterns to extract basic information like email, phone, and common skills.
 
 ### Custom Response Templates
 

@@ -2,23 +2,95 @@ from flask import Flask, render_template, request, jsonify, session
 from flask_cors import CORS
 import json
 import os
+import tempfile
+from werkzeug.utils import secure_filename
 from neogiator_bot import NeogiatorBot, NegotiationStrategy
+from resume_parser import ResumeParser
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 CORS(app)
 
-# Initialize bot
+# Configuration
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg'}
+MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+
+# Create upload folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
+
+# Initialize bot and parser
 bot = None
+parser = None
 try:
     bot = NeogiatorBot()
+    parser = ResumeParser()
 except ValueError:
     print("Warning: OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/api/upload_resume', methods=['POST'])
+def upload_resume():
+    """Upload and parse resume to create user profile"""
+    if not parser:
+        return jsonify({"error": "Resume parser not initialized. Please set OPENAI_API_KEY."}), 500
+    
+    if 'resume' not in request.files:
+        return jsonify({"error": "No resume file provided"}), 400
+    
+    file = request.files['resume']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({"error": f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"}), 400
+    
+    try:
+        # Save uploaded file
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        # Parse resume
+        parsed_resume = parser.parse_resume(file_path)
+        user_profile = parser.create_user_profile(parsed_resume)
+        
+        # Clean up uploaded file
+        os.remove(file_path)
+        
+        return jsonify({
+            "success": True,
+            "user_profile": user_profile,
+            "parsed_data": {
+                "name": parsed_resume.name,
+                "email": parsed_resume.email,
+                "phone": parsed_resume.phone,
+                "years_experience": parsed_resume.years_experience,
+                "education_level": parsed_resume.education_level,
+                "industry": parsed_resume.industry,
+                "skills": parsed_resume.skills,
+                "certifications": parsed_resume.certifications,
+                "achievements": parsed_resume.achievements
+            }
+        })
+    
+    except Exception as e:
+        # Clean up file if it exists
+        if 'file_path' in locals() and os.path.exists(file_path):
+            os.remove(file_path)
+        return jsonify({"error": f"Error parsing resume: {str(e)}"}), 500
 
 @app.route('/api/create_context', methods=['POST'])
 def create_context():
